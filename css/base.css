@@ -1,0 +1,1060 @@
+/* ============================================================
+   base.css — reset, типографика, раскладки слайдов, тактильность
+   Зависит от tokens.css. Хром интерфейса — в chrome.css.
+   ============================================================ */
+
+/* --- Reset --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden; /* дека: слайды на весь экран, скролла нет */
+  transition: background-color var(--dur-2) var(--ease-out),
+    color var(--dur-2) var(--ease-out);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* ============================================================
+   Каркас деки
+   ============================================================ */
+
+#deck {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  height: 100dvh;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: var(--z-exit);
+  overflow: hidden;
+  display: flex;
+}
+
+.slide-inner {
+  width: 100%;
+  max-width: 1180px;
+  margin: auto;
+  padding: clamp(24px, 5vw, 64px);
+}
+
+/* --- Активный и уходящий слайды --- */
+.slide.is-active {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: var(--z-slide);
+}
+
+/* Вход: CSS-fallback, когда View Transitions API недоступен */
+@keyframes slide-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(24px);
+  }
+}
+
+.slide.is-active {
+  animation: slide-enter var(--dur-3) var(--ease-out) both;
+}
+
+@keyframes slide-exit {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+    filter: blur(8px);
+  }
+}
+
+.slide.is-exiting {
+  visibility: visible;
+  pointer-events: none;
+  animation: slide-exit 700ms var(--ease-out) both;
+}
+
+/* Первый показ — без анимации (класс снимает deck.js после кадра) */
+#deck.is-booting .slide.is-active {
+  animation: none;
+}
+#deck.is-booting .slide.is-active [data-reveal] {
+  transition: none;
+}
+
+/* ============================================================
+   Типографика слайдов
+   ============================================================ */
+
+.kicker {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-2);
+}
+
+.slide-title {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.06;
+  color: var(--text);
+}
+
+.slide-sub {
+  color: var(--text-2);
+  max-width: 60ch;
+  line-height: 1.55;
+}
+
+.text-gradient {
+  background: linear-gradient(180deg, var(--text) 30%, var(--text-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.source-line {
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+
+/* --- Цитаты: тонкая линия сверху, никакого цветного бордера --- */
+.quotes {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.quote {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--card-border);
+  font-size: var(--fs-h3);
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.quote cite {
+  display: block;
+  margin-top: var(--space-3);
+  font-style: normal;
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   Карточки (матовое стекло)
+   ============================================================ */
+
+.card,
+.bento-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: var(--shadow-1);
+  padding: var(--space-5);
+  transition: transform var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover,
+  .bento-card:hover {
+    transform: translateY(-2px);
+    background: var(--card-hover);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  [data-theme="light"] .card:hover,
+  [data-theme="light"] .bento-card:hover {
+    border-color: rgba(0, 0, 0, 0.16);
+  }
+}
+
+.card h3,
+.bento-card h3 {
+  font-size: var(--fs-h3);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.card p,
+.bento-card p {
+  margin-top: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--fs-body);
+}
+
+.card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elev);
+  border: 1px solid var(--card-border);
+  color: var(--accent);
+  margin-bottom: var(--space-4);
+}
+
+.card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================
+   Управляющие элементы: кнопки, чипы, капсулы клавиш
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: var(--fs-body);
+  letter-spacing: -0.01em;
+  transition: transform var(--dur-1) var(--ease-out),
+    background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn--primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #fff);
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text);
+}
+
+.btn--ghost:hover {
+  background: var(--bg-elev);
+  border-color: var(--text-3);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: var(--fs-caption);
+  font-weight: 550;
+  color: var(--text-2);
+  background: var(--bg-elev);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out),
+    background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+.chip:hover {
+  color: var(--text);
+  border-color: var(--text-3);
+}
+
+.chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-2);
+  background: var(--bg-elev);
+  border: 1px solid var(--card-border);
+  border-bottom-width: 2px;
+}
+
+/* --- Кольцо фокуса --- */
+:where(.btn, .chip, .card, .bento-card, a, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+
+/* ============================================================
+   Staggered reveal при входе слайда
+   ============================================================ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.slide.is-active [data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--dur-3) var(--ease-out),
+    transform var(--dur-3) var(--ease-out);
+  transition-delay: min(calc(var(--i, 0) * 45ms), 450ms);
+}
+
+/* ============================================================
+   Раскладки слайдов
+   ============================================================ */
+
+/* --- Hero: гигантский титул по центру --- */
+.layout-hero .slide-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.layout-hero .kicker {
+  margin-bottom: var(--space-2);
+}
+
+.layout-hero .slide-title {
+  font-size: var(--fs-display);
+  line-height: 1.02;
+}
+
+.layout-hero .source-line {
+  margin-top: var(--space-4);
+}
+
+/* --- Statement: крупная мысль + цитаты --- */
+.layout-statement .slide-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-7);
+}
+
+.layout-statement .slide-title {
+  font-size: var(--fs-h1);
+}
+
+.layout-statement .quotes {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* --- Bento: вариативная сетка --- */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(150px, auto);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.bento-grid .span-2 {
+  grid-column: span 2;
+}
+
+.bento-grid .row-2 {
+  grid-row: span 2;
+}
+
+/* --- Diagram: горизонтальный флоу + цикл ReAct --- */
+.layout-diagram .slide-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-7);
+}
+
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.flow-step {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) var(--space-5);
+  text-align: center;
+}
+
+.flow-step .flow-index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.flow-arrow {
+  align-self: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 20px;
+  color: var(--text-3);
+}
+
+/* Цикл ReAct: три узла и возврат */
+.loop {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  padding-bottom: 26px;
+}
+
+.loop-node {
+  flex: 1;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.loop-return {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 4px;
+  height: 16px;
+  border: 1px dashed var(--text-3);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.loop-return::after {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 8px;
+  height: 8px;
+  border-left: 1px dashed var(--text-3);
+  border-bottom: 1px dashed var(--text-3);
+  transform: rotate(45deg);
+}
+
+.loop-label {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  background: var(--bg);
+  padding: 0 var(--space-3);
+}
+
+/* --- Timeline: шаги с точками и линией --- */
+.layout-timeline .slide-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.timeline {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-7);
+}
+
+.timeline-step {
+  position: relative;
+  flex: 1;
+  padding-top: var(--space-6);
+}
+
+.timeline-step::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.timeline-step::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 24px;
+  right: calc(-1 * var(--space-5) + 10px);
+  height: 1px;
+  background: var(--card-border);
+}
+
+.timeline-step:last-child::after {
+  display: none;
+}
+
+.timeline-step .timeline-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+
+.timeline-step h3 {
+  margin-top: var(--space-2);
+  font-size: var(--fs-h3);
+  letter-spacing: -0.01em;
+}
+
+.timeline-step p {
+  margin-top: var(--space-2);
+  color: var(--text-2);
+}
+
+/* --- Reference: сетка справок --- */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.ref-grid .card h3 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.ref-grid .card code,
+.card code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--accent);
+  background: var(--bg-elev);
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  padding: 1px 7px;
+}
+
+/* --- Widget: заголовок сверху, зона виджета под ним --- */
+.layout-widget .slide-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.widget-zone {
+  min-height: 0;
+}
+
+/* --- Finale: акцентная мысль крупно --- */
+.layout-finale .slide-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  text-align: center;
+}
+
+.layout-finale .slide-title {
+  font-size: clamp(38px, 6.4vw, 84px);
+  line-height: 1.04;
+}
+
+.layout-finale .actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+/* ============================================================
+   Адаптив: одна колонка на мобильном
+   ============================================================ */
+
+@media (max-width: 760px) {
+  .bento-grid,
+  .ref-grid,
+  .layout-statement .quotes {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-grid .span-2,
+  .bento-grid .row-2 {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .layout-hero .slide-title {
+    font-size: clamp(38px, 11vw, 64px);
+  }
+
+  /* Флоу вертикально */
+  .flow {
+    flex-direction: column;
+  }
+
+  .flow-arrow {
+    transform: rotate(90deg);
+    align-self: center;
+  }
+
+  /* Таймлайн вертикально */
+  .timeline {
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .timeline-step {
+    padding-top: 0;
+    padding-left: var(--space-6);
+  }
+
+  .timeline-step::before {
+    top: 5px;
+    left: 0;
+  }
+
+  .timeline-step::after {
+    top: 18px;
+    bottom: calc(-1 * var(--space-5) + 14px);
+    left: 6px;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+
+  .timeline-step:last-child::after {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Печать: все слайды друг под другом, альбомная
+   ============================================================ */
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  body {
+    overflow: visible;
+    background: #fff;
+    color: #000;
+  }
+
+  #deck {
+    height: auto;
+  }
+
+  .slide {
+    position: relative;
+    inset: auto;
+    height: auto;
+    min-height: 100vh;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    animation: none;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .slide.is-exiting {
+    display: none;
+  }
+
+  .slide-inner {
+    max-width: none;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Reduced motion: всё мгновенно, контент виден сразу
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .slide.is-active,
+  .slide.is-exiting {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   Классы интеграции index.html (добавлены главным агентом)
+   ============================================================ */
+
+.card-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+
+.harness-card {
+  margin-top: var(--space-5);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--card-border));
+}
+
+.moral-card {
+  margin-top: var(--space-5);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--card-border));
+}
+
+.finale-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  width: 100%;
+  max-width: 760px;
+}
+
+@media (max-width: 760px) {
+  .finale-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* iframe живого приложения (Poster Studio) внутри слайда */
+.widget-zone--app {
+  display: flex;
+  justify-content: center;
+}
+
+.app-frame {
+  width: min(100%, 980px);
+  height: min(58vh, 540px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: #0e0e12;
+  color-scheme: dark;
+}
+
+@media (max-width: 760px) {
+  .app-frame {
+    height: 52vh;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* ============================================================
+   Слайдовые элементы апгрейда (контентная разметка)
+   ============================================================ */
+
+.badge-inline {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--accent);
+}
+
+.statement-foot {
+  margin-top: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 640px;
+}
+
+.reveal {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  padding: 10px 16px;
+}
+
+.reveal summary {
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: var(--fs-body);
+  list-style: none;
+}
+
+.reveal summary::-webkit-details-marker { display: none; }
+.reveal summary::before { content: "→ "; color: var(--accent); }
+.reveal[open] summary::before { content: "↓ "; }
+.reveal p { margin-top: 8px; color: var(--text-2); }
+
+.caveat {
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+.caveat b { color: var(--text-2); font-weight: 600; }
+
+.hub-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.hub-spoke {
+  width: 96px;
+  height: 77px;
+  flex: none;
+  color: var(--accent);
+}
+.hub-spoke .hub-core { fill: color-mix(in srgb, var(--accent) 24%, transparent); }
+
+.timeline-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.7px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.file-label {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--accent);
+  background: var(--bg-elev);
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  padding: 1px 8px;
+}
+
+.flag-note {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.lv-chip, .md-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  background: var(--bg-elev);
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+  transition: border-color var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
+}
+
+.mini-note {
+  margin-top: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+
+.install-card .install-commands {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.install-card code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--accent);
+  background: var(--bg-elev);
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  padding: 3px 10px;
+}
+
+.link-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.link-card h3 { color: var(--accent); }
+@media (hover: hover) {
+  .link-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+}
+
+.widget-zone--slim { width: 100%; }
+
+@media (max-width: 760px) {
+  .hub-row { flex-direction: column; align-items: flex-start; }
+}
+
+.ref-model.is-pick,
+.lv-chip.is-pick,
+.md-chip.is-pick {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1.7px var(--accent);
+}
+.lv-chip.is-pick, .md-chip.is-pick { color: var(--text); }
+
+/* --- Harness: сетка-кольцо вокруг LLM (схема из статьи) --- */
+.harness-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  width: 100%;
+}
+
+.harness-core {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1.7px var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--card-bg));
+}
+.harness-core h3 { color: var(--accent); font-size: var(--fs-h2); }
+
+.harness-cell h3 { font-size: var(--fs-body); font-weight: 650; }
+.harness-cell p { font-size: var(--fs-caption); margin-top: 4px; }
+
+@media (max-width: 760px) {
+  .harness-grid { grid-template-columns: 1fr 1fr; }
+  .harness-core { grid-column: span 2; order: -1; }
+}
+
+/* --- Иллюстрации из статьи --- */
+.ill-card {
+  margin: var(--space-5) auto 0;
+  width: min(100%, 980px);
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.ill-card img {
+  display: block;
+  max-width: 100%;
+  height: min(52vh, 460px);
+  object-fit: contain;
+}
+.ill-card--tall img {
+  height: min(58vh, 500px);
+}
+
+@media (max-width: 760px) {
+  .ill-card { width: 100%; }
+  .ill-card img { height: 44vh; }
+  .ill-card--tall img { height: 50vh; }
+}
+
+/* Компактный режим для плотных bento-слайдов */
+.bento-grid.bento-compact { gap: var(--space-3); }
+.bento-compact .bento-card { padding: var(--space-3) var(--space-4); }
+.bento-compact .bento-card p { margin-top: 4px; font-size: var(--fs-caption); }
+.bento-compact .card-tag { margin-bottom: var(--space-2); }
+
+/* Мобильный режим: слайд = скроллируемая страница
+   (вертикальное колесо/свайп уже не листают слайды) */
+@media (max-width: 760px) {
+  .slide-inner {
+    overflow-y: auto;
+    justify-content: flex-start;
+    max-height: 100%;
+    padding-block: clamp(56px, 9vh, 88px);
+    scrollbar-width: none;
+  }
+  .slide-inner::-webkit-scrollbar { display: none; }
+  .layout-hero .slide-inner,
+  .layout-finale .slide-inner { justify-content: center; }
+}
+
+/* Длинные команды установки переносятся — не дают hScroll */
+.install-card code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

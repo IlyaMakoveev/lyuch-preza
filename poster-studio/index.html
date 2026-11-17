@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poster Studio — Редактор постеров</title>
+  <style>
+    :root {
+      --bg: #0e0e12;
+      --panel-bg: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #f5f5f7;
+      --text-muted: rgba(235, 235, 245, 0.6);
+      --accent: #0a84ff;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(14, 14, 18, 0.8);
+      backdrop-filter: blur(20px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: rgba(10, 132, 255, 0.2);
+      color: var(--accent);
+      border: 1px solid rgba(10, 132, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .app-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .editor-pane {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      backdrop-filter: blur(24px);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .color-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: none;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .btn-download {
+      margin-top: auto;
+      padding: 14px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .btn-download:hover { background: #0071e3; }
+    .btn-download:active { transform: scale(0.98); }
+    .btn-download:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .preview-pane {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Визуальное превью постера */
+    .poster-canvas-wrap {
+      width: 100%;
+      max-width: 480px;
+      aspect-ratio: 1080 / 1350;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Стили постера */
+    .poster-content {
+      width: 100%;
+      height: 100%;
+      padding: 10%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    /* Minimal style */
+    .style-minimal {
+      background: #fbfbfd;
+      color: #1d1d1f;
+    }
+    .style-minimal .poster-tag { color: var(--accent-color, #0a84ff); font-weight: 600; }
+    .style-minimal .poster-title { color: #1d1d1f; }
+    .style-minimal .poster-sub { color: #86868b; }
+    .style-minimal .poster-footer { border-top: 1px solid #e5e5e7; color: #515154; }
+
+    /* Dark style */
+    .style-dark {
+      background: #0a0a0c;
+      color: #f5f5f7;
+    }
+    .style-dark .poster-tag { color: var(--accent-color, #0a84ff); font-weight: 600; }
+    .style-dark .poster-title { color: #ffffff; }
+    .style-dark .poster-sub { color: rgba(235, 235, 245, 0.6); }
+    .style-dark .poster-footer { border-top: 1px solid rgba(255, 255, 255, 0.12); color: rgba(235, 235, 245, 0.5); }
+
+    /* Gradient style */
+    .style-gradient {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+      color: #ffffff;
+    }
+    .style-gradient::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      right: -20%;
+      width: 70%;
+      height: 70%;
+      background: radial-gradient(circle, var(--accent-color, #0a84ff) 0%, transparent 70%);
+      opacity: 0.3;
+      filter: blur(40px);
+    }
+    .style-gradient .poster-tag {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 6px 14px;
+      border-radius: 99px;
+      display: inline-block;
+      align-self: flex-start;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .style-gradient .poster-title { color: #ffffff; }
+    .style-gradient .poster-sub { color: rgba(255, 255, 255, 0.7); }
+    .style-gradient .poster-footer { border-top: 1px solid rgba(255, 255, 255, 0.15); color: rgba(255, 255, 255, 0.6); }
+
+    .poster-header { display: flex; flex-direction: column; gap: 8px; }
+    .poster-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; }
+    .poster-title {
+      font-size: var(--title-size, 2.2rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      word-break: break-word;
+    }
+    .poster-sub { font-size: 0.95rem; line-height: 1.4; margin-top: 8px; }
+    .poster-footer {
+      padding-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 900px) {
+      .app-body { grid-template-columns: 1fr; }
+      .poster-canvas-wrap { max-width: 340px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .poster-canvas-wrap, .btn-download { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9h18M9 21V9"/>
+      </svg>
+      Poster Studio
+      <span class="badge">Vibe-Coded Project</span>
+    </div>
+    <div style="font-size: 13px; color: var(--text-muted);">Экспорт 1080 × 1350 PNG</div>
+  </header>
+
+  <main class="app-body">
+    <div class="editor-pane">
+      <div class="form-group">
+        <label>Стиль оформления</label>
+        <select id="styleSelect">
+          <option value="style-dark">Dark (Тёмный минимализм)</option>
+          <option value="style-minimal">Minimal (Светлая классика)</option>
+          <option value="style-gradient">Gradient (Мягкий градиент)</option>
+        </select>
+      </div>
+
+      <div class="control-row">
+        <div class="form-group">
+          <label>Акцентный цвет</label>
+          <div class="color-picker-wrap">
+            <input type="color" id="accentColor" value="#0a84ff">
+            <span id="colorHex" style="font-size: 12px; font-family: monospace;">#0a84ff</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Размер заголовка</label>
+          <input type="range" id="fontSize" min="1.5" max="3.5" step="0.1" value="2.2">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Категория / Тег</label>
+        <input type="text" id="tagInput" value="КИНОФЕСТИВАЛЬ">
+      </div>
+
+      <div class="form-group">
+        <label>Заголовок афиши</label>
+        <input type="text" id="titleInput" value="Осенние истории">
+      </div>
+
+      <div class="form-group">
+        <label>Подзаголовок</label>
+        <textarea id="subInput">Короткий метр и документальное кино молодых режиссёров</textarea>
+      </div>
+
+      <div class="control-row">
+        <div class="form-group">
+          <label>Дата</label>
+          <input type="text" id="dateInput" value="14–21 НОЯБРЯ">
+        </div>
+        <div class="form-group">
+          <label>Место</label>
+          <input type="text" id="venueInput" value="МОСКВА · ИЛЛЮЗИОН">
+        </div>
+      </div>
+
+      <button class="btn-download" id="downloadBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        Скачать PNG (1080×1350)
+      </button>
+    </div>
+
+    <div class="preview-pane">
+      <div class="poster-canvas-wrap style-dark" id="posterWrap">
+        <div class="poster-content">
+          <div class="poster-header">
+            <div class="poster-tag" id="posterTag">КИНОФЕСТИВАЛЬ</div>
+            <div class="poster-title" id="posterTitle">Осенние истории</div>
+            <div class="poster-sub" id="posterSub">Короткий метр и документальное кино молодых режиссёров</div>
+          </div>
+          <div class="poster-footer">
+            <span id="posterDate">14–21 НОЯБРЯ</span>
+            <span id="posterVenue">МОСКВА · ИЛЛЮЗИОН</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <canvas id="exportCanvas" width="1080" height="1350" style="display:none;"></canvas>
+
+  <script>
+    const styleSelect = document.getElementById('styleSelect');
+    const accentColor = document.getElementById('accentColor');
+    const colorHex = document.getElementById('colorHex');
+    const fontSize = document.getElementById('fontSize');
+    const tagInput = document.getElementById('tagInput');
+    const titleInput = document.getElementById('titleInput');
+    const subInput = document.getElementById('subInput');
+    const dateInput = document.getElementById('dateInput');
+    const venueInput = document.getElementById('venueInput');
+    const posterWrap = document.getElementById('posterWrap');
+
+    const posterTag = document.getElementById('posterTag');
+    const posterTitle = document.getElementById('posterTitle');
+    const posterSub = document.getElementById('posterSub');
+    const posterDate = document.getElementById('posterDate');
+    const posterVenue = document.getElementById('posterVenue');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    function updatePoster() {
+      // Обновляем тексты
+      posterTag.textContent = tagInput.value || ' ';
+      posterTitle.textContent = titleInput.value || ' ';
+      posterSub.textContent = subInput.value || ' ';
+      posterDate.textContent = dateInput.value || ' ';
+      posterVenue.textContent = venueInput.value || ' ';
+
+      // Обновляем стиль и свойства
+      posterWrap.className = 'poster-canvas-wrap ' + styleSelect.value;
+      posterWrap.style.setProperty('--accent-color', accentColor.value);
+      posterWrap.style.setProperty('--title-size', fontSize.value + 'rem');
+      colorHex.textContent = accentColor.value;
+    }
+
+    [styleSelect, accentColor, fontSize, tagInput, titleInput, subInput, dateInput, venueInput].forEach(el => {
+      el.addEventListener('input', updatePoster);
+    });
+
+    // Экспорт в PNG 1080х1350 через Canvas API
+    downloadBtn.addEventListener('click', () => {
+      const canvas = document.getElementById('exportCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = 1080;
+      const h = 1350;
+
+      const style = styleSelect.value;
+      const accent = accentColor.value;
+
+      // Отрисовка фона
+      if (style === 'style-minimal') {
+        ctx.fillStyle = '#fbfbfd';
+        ctx.fillRect(0, 0, w, h);
+      } else if (style === 'style-dark') {
+        ctx.fillStyle = '#0a0a0c';
+        ctx.fillRect(0, 0, w, h);
+      } else if (style === 'style-gradient') {
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#0d1117');
+        grad.addColorStop(0.5, '#161b22');
+        grad.addColorStop(1, '#21262d');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        const radGrad = ctx.createRadialGradient(w * 0.8, h * 0.2, 0, w * 0.8, h * 0.2, w * 0.6);
+        radGrad.addColorStop(0, accent + '44');
+        radGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = radGrad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      const padding = 108; // 10%
+      ctx.textAlign = 'left';
+
+      // Рендер тега
+      ctx.fillStyle = (style === 'style-minimal' || style === 'style-dark') ? accent : '#ffffff';
+      ctx.font = '600 28px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(tagInput.value.toUpperCase(), padding, padding + 40);
+
+      // Рендер заголовка с переносом строк
+      ctx.fillStyle = (style === 'style-minimal') ? '#1d1d1f' : '#ffffff';
+      const titleFontPx = Math.round(parseFloat(fontSize.value) * 36);
+      ctx.font = `800 ${titleFontPx}px -apple-system, BlinkMacSystemFont, sans-serif`;
+
+      const words = titleInput.value.split(' ');
+      let line = '';
+      let y = padding + 140;
+      const maxWidth = w - padding * 2;
+      const lineHeight = titleFontPx * 1.1;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, padding, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, padding, y);
+
+      // Рендер подзаголовка
+      y += 40;
+      ctx.fillStyle = (style === 'style-minimal') ? '#86868b' : 'rgba(235, 235, 245, 0.7)';
+      ctx.font = '400 32px -apple-system, BlinkMacSystemFont, sans-serif';
+      
+      const subWords = subInput.value.split(' ');
+      let subLine = '';
+      for (let n = 0; n < subWords.length; n++) {
+        const testLine = subLine + subWords[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+          ctx.fillText(subLine, padding, y);
+          subLine = subWords[n] + ' ';
+          y += 44;
+        } else {
+          subLine = testLine;
+        }
+      }
+      ctx.fillText(subLine, padding, y);
+
+      // Разделитель и футер
+      const footerY = h - padding;
+      ctx.strokeStyle = (style === 'style-minimal') ? '#e5e5e7' : 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padding, footerY - 50);
+      ctx.lineTo(w - padding, footerY - 50);
+      ctx.stroke();
+
+      ctx.fillStyle = (style === 'style-minimal') ? '#515154' : 'rgba(235, 235, 245, 0.6)';
+      ctx.font = '500 26px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(dateInput.value.toUpperCase(), padding, footerY);
+
+      ctx.textAlign = 'right';
+      ctx.fillText(venueInput.value.toUpperCase(), w - padding, footerY);
+
+      // Скачивание файла
+      const link = document.createElement('a');
+      link.download = 'poster.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    updatePoster();
+  </script>
+</body>
+</html>

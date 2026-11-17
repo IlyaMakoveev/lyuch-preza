@@ -1,0 +1,95 @@
+/* ============================================================
+   tokens.css — дизайн-токены деки «Вайбкодинг»
+   Единственный источник правды по цвету, типографике и движению.
+   Имена переменных зафиксированы в BRIEF («Общий словарь имён»).
+   ============================================================ */
+
+:root {
+  /* --- Поверхности и текст (тёмная тема по умолчанию) --- */
+  --bg: #0a0a0c;
+  --bg-elev: rgba(255, 255, 255, 0.045);
+  --text: #f5f5f7;
+  --text-2: rgba(235, 235, 245, 0.64);
+  --text-3: rgba(235, 235, 245, 0.38);
+
+  /* --- Акцент: системный синий Apple. Один на всю деку --- */
+  --accent: #0a84ff;
+  --on-accent: #ffffff;
+
+  /* --- Материал карточек (матовое стекло) --- */
+  --card-bg: rgba(255, 255, 255, 0.055);
+  --card-border: rgba(255, 255, 255, 0.10);
+  --card-hover: rgba(255, 255, 255, 0.095);
+
+  /* --- Семантика --- */
+  --success: #30d158;
+  --danger: #ff453a;
+
+  /* --- Геометрия --- */
+  --radius-card: 26px;
+  --radius-md: 19px;
+  --radius-sm: 11px;
+
+  /* --- Движение --- */
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-1: 160ms;
+  --dur-2: 320ms;
+  --dur-3: 560ms;
+
+  /* --- Шрифты --- */
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono",
+    monospace;
+
+  /* --- Типографическая шкала --- */
+  --fs-display: clamp(44px, 8.6vw, 104px);
+  --fs-h1: clamp(34px, 5.2vw, 62px);
+  --fs-h2: clamp(26px, 3.4vw, 38px);
+  --fs-h3: clamp(19px, 2vw, 23px);
+  --fs-body: clamp(16px, 1.35vw, 19px);
+  --fs-caption: clamp(12px, 1vw, 14px);
+  --tracking-tight: -0.03em;
+
+  /* --- Шкала отступов --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* --- Тени (глубина слоёв, не неон) --- */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.18);
+  --shadow-2: 0 8px 28px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.22);
+
+  /* --- Z-оси --- */
+  --z-slide: 1;
+  --z-exit: 0;
+  --z-chrome: 50;
+  --z-overview: 90;
+  --z-top: 100;
+}
+
+/* --- Светлая тема --- */
+[data-theme="light"] {
+  --bg: #f5f5f7;
+  --bg-elev: rgba(0, 0, 0, 0.035);
+  --text: #1d1d1f;
+  --text-2: rgba(29, 29, 31, 0.66);
+  --text-3: rgba(29, 29, 31, 0.42);
+
+  --accent: #0071e3;
+  --on-accent: #ffffff;
+
+  --card-bg: rgba(255, 255, 255, 0.66);
+  --card-border: rgba(0, 0, 0, 0.09);
+  --card-hover: rgba(255, 255, 255, 0.88);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-2: 0 8px 28px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
